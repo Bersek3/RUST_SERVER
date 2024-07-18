@@ -1,0 +1,12 @@
+name: Keep Codespace Alive
+
+on:
+  schedule:
+    - cron: '*/25 * * * *'
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send keep-alive request
+        run: curl -X GET https://literate-disco-x5w4v6pvxvgpf6rr6.github.dev/
