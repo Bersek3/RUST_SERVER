@@ -1,0 +1,29 @@
+name: Start Codespace
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'  # Este ejemplo inicia el Codespace todos los días a las 9:00 AM UTC
+
+jobs:
+  start-codespace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Start Codespace
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/user/codespaces \
+            -d '{
+              "repository": "Bersek3/RUST_SERVER",
+              "machine": "standardLinux",
+              "ref": "main",
+              "location": "WestUS2",
+              "client_ip": "0.0.0.0"
+            }'
