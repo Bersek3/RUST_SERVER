@@ -1,2 +1,4 @@
-python-dotenv==1.0.1
-pip install python-dotenv
+python-dotenv
+discord.py
+requests
+# Agrega aquí otras dependencias necesarias
