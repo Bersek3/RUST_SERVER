@@ -21,6 +21,9 @@ intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Diccionario para rastrear suspensiones
+suspensiones = {}
+
 # Evento para cuando el bot está listo
 @bot.event
 async def on_ready():
@@ -72,29 +75,54 @@ async def es_invitacion_discord(message):
         return True
     return False
 
-# Función para manejar acciones contra usuarios que hacen spam
 async def manejar_spam(user):
     roles_usuario = [role.id for role in user.roles]
     if any(role_id in roles_a_excluir for role_id in roles_usuario):
         return
-     
-    if not await es_spammer_anterior(user):
-        timeout_duration = timedelta(hours=1)
+
+    user_id = user.id
+    
+    # Incrementar el conteo de suspensiones
+    if user_id in suspensiones:
+        suspensiones[user_id] += 1
     else:
-        timeout_duration = None
-     
-    await aplicar_timeout(user, timeout_duration)
+        suspensiones[user_id] = 1
+
+    # Verificar el conteo de suspensiones
+    if suspensiones[user_id] >= 4:
+        await user.ban(reason='Baneado después de 3 suspensiones por spam.')
+        await user.send('Has sido baneado del servidor después de recibir 3 suspensiones por spam.')
+        suspensiones.pop(user_id)  # Limpiar el conteo
+    else:
+        timeout_duration = timedelta(hours=1)
+        await aplicar_timeout(user, timeout_duration)
+
+
+        
 
 # Función para manejar acciones contra usuarios que hacen invitaciones a otros servidores de Discord
 async def manejar_invitacion_discord(user):
     roles_usuario = [role.id for role in user.roles]
     if any(role_id in roles_a_excluir for role_id in roles_usuario):
         return
-     
-    timeout_duration = timedelta(minutes=30)
-    await aplicar_timeout(user, timeout_duration)
+    
+    user_id = user.id
+    
+    # Incrementar el conteo de suspensiones
+    if user_id in suspensiones:
+        suspensiones[user_id] += 1
+    else:
+        suspensiones[user_id] = 1
+    
+    # Verificar el conteo de suspensiones
+    if suspensiones[user_id] >= 4:
+        await user.ban(reason='Baneado después de 3 suspensiones por invitaciones.')
+        await user.send('Has sido baneado del servidor después de recibir 3 suspensiones por invitaciones a otros servidores.')
+        suspensiones.pop(user_id)  # Limpiar el conteo
+    else:
+        timeout_duration = timedelta(minutes=30)
+        await aplicar_timeout(user, timeout_duration)
 
-# Función genérica para aplicar timeout temporal a un usuario
 async def aplicar_timeout(user, timeout_duration):
     if timeout_duration:
         await user.edit(timed_out_until=discord.utils.utcnow() + timeout_duration)
@@ -112,7 +140,7 @@ async def aplicar_timeout(user, timeout_duration):
         
         canal_registro = bot.get_channel(canal_registro_id)
         if canal_registro:
-            await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por hacer spam repetido.')
+            await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por hacer spam repetido.')        
 
 # Ejecutar el bot
 bot.run(TOKEN)
