@@ -58,20 +58,6 @@ async def redes(ctx):
     await ctx.send(embed=embed)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Command !plataforma
 @bot.command(name='plataforma')
 async def plataforma(ctx):
