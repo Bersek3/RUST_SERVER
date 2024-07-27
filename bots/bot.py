@@ -9,8 +9,8 @@ load_dotenv()
 # Obtener el token y el canal ID del archivo .env
 TOKEN = os.getenv('BOT_PRINCIPAL')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID_BOT_PRINCIPAL'))
-MESSAGE_ID_PLATAFORMA = None  # Will be assigned dynamically
-MESSAGE_ID_REGION = None  # Will be assigned dynamically
+MESSAGE_ID_PLATAFORMA = int(os.getenv('MESSAGE_ID_PLATAFORMA'))
+MESSAGE_ID_REGION = int(os.getenv('MESSAGE_ID_REGION'))
 
 # Bot configuration
 intents = discord.Intents.default()
@@ -75,7 +75,6 @@ async def plataforma(ctx):
         await message.add_reaction(emoji)
 
     # Save the message ID to a global variable for use in on_raw_reaction_add and on_raw_reaction_remove
-    global MESSAGE_ID_PLATAFORMA
     MESSAGE_ID_PLATAFORMA = message.id
     print(f'Sent !plataforma message with ID: {MESSAGE_ID_PLATAFORMA}')
 
@@ -100,7 +99,7 @@ async def region(ctx):
         await message.add_reaction(emoji)
 
     # Save the message ID to a global variable for use in on_raw_reaction_add and on_raw_reaction_remove
-    global MESSAGE_ID_REGION
+
     MESSAGE_ID_REGION = message.id
     print(f'Sent !region message with ID: {MESSAGE_ID_REGION}')
 
