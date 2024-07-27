@@ -123,24 +123,28 @@ async def manejar_invitacion_discord(user):
         timeout_duration = timedelta(minutes=30)
         await aplicar_timeout(user, timeout_duration)
 
+
+
 async def aplicar_timeout(user, timeout_duration):
+    canal_registro = bot.get_channel(canal_registro_id)
+    
     if timeout_duration:
+        # Aplicar timeout
         await user.edit(timed_out_until=discord.utils.utcnow() + timeout_duration)
         await user.send(f'Se te ha aplicado un timeout por {timeout_duration.total_seconds() // 60} minutos por enviar invitaciones a otros servidores de Discord o hacer spam en el servidor.')
         await limpiar_mensajes(user)
         
-        canal_registro = bot.get_channel(canal_registro_id)
         if canal_registro:
             await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido suspendido por {timeout_duration.total_seconds() // 60} minutos.')
 
     else:
+        # Aplicar baneo
         await user.ban(reason='Spam repetido en el servidor.')
-        await user.send(f'Has sido baneado del servidor por hacer spam repetido.')
+        await user.send('Has sido baneado del servidor por hacer spam repetido.')
         await limpiar_mensajes(user)
         
-        canal_registro = bot.get_channel(canal_registro_id)
         if canal_registro:
-            await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por hacer spam repetido.')        
+            await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por hacer spam repetido.')   
 
 # Ejecutar el bot
 bot.run(TOKEN)
