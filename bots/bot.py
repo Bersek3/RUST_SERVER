@@ -51,6 +51,7 @@ async def redes(ctx):
     embed.add_field(name="", value="<:INSTAGRAM:1266623062929969247> [Instagram](https://www.instagram.com/caozyt/)", inline=False)
     embed.add_field(name="", value="<:YOUTUBE:1266623064347775027> [YouTube](https://www.youtube.com/@CAOZ)", inline=False)
     embed.add_field(name="", value="<:kick:1266624736226578532> [Kick](https://kick.com/caoz)", inline=False)
+    embed.add_field(name="", value="<:TIKTOK:1266693677791707177> [Tiktok](https://www.tiktok.com/@caozyt)", inline=False)
     embed.set_footer(text="¡No olvides darle follow!")
 
     # Set the image URL with the desired image
