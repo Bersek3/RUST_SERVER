@@ -46,7 +46,7 @@ async def redes(ctx):
         color=0x6A0DAD  # Purple color
     )
     embed.add_field(name="", value="<:TWITCH:1266623059662733363> [Twitch](https://www.twitch.tv/caozssj)", inline=False)
-    embed.add_field(name="", value="<:FACEBOOK:1266623057645015082> [Facebook](https://www.facebook.com)", inline=False)
+    embed.add_field(name="", value="<:FACEBOOK:1266623057645015082> [Facebook](https://www.facebook.com/caozyt)", inline=False)
     embed.add_field(name="", value="<:X:1266686402003730523> [Twitter](https://x.com/CAOZYUTU)", inline=False)
     embed.add_field(name="", value="<:INSTAGRAM:1266623062929969247> [Instagram](https://www.instagram.com/caozyt/)", inline=False)
     embed.add_field(name="", value="<:YOUTUBE:1266623064347775027> [YouTube](https://www.youtube.com/@CAOZ)", inline=False)
