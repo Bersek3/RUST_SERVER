@@ -38,20 +38,18 @@ region_roles = {
 
 # Command !redes
 
-# Command !redes
-
 @bot.command(name='redes')
 async def redes(ctx):
     embed = discord.Embed(
         title="REDES SOCIALES DE CAOZ",
         color=0x6A0DAD  # Purple color
     )
-    embed.add_field(name="<:TWITCH:1266623059662733363> Twitch", value="[Twitch](https://www.twitch.tv/caozssj)", inline=False)
-    embed.add_field(name="<:FACEBOOK:1266623057645015082> Facebook", value="[Facebook](https://www.facebook.com)", inline=False)
-    embed.add_field(name="<:X:1266623061550174329> Twitter", value="[Twitter](https://x.com/CAOZYUTU)", inline=False)
-    embed.add_field(name="<:INSTAGRAM:1266623062929969247> Instagram", value="[Instagram](https://www.instagram.com/caozyt/)", inline=False)
-    embed.add_field(name="<:YOUTUBE:1266623064347775027> YouTube", value="[YouTube](https://www.youtube.com/@CAOZ)", inline=False)
-    embed.add_field(name="<:kick:1082916486240292975> Kick", value="[Kick](https://kick.com/caoz)", inline=False)
+    embed.add_field(name="Twitch", value="<:TWITCH:1266623059662733363> [Twitch](https://www.twitch.tv/caozssj)", inline=False)
+    embed.add_field(name="Facebook", value="<:FACEBOOK:1266623057645015082> [Facebook](https://www.facebook.com)", inline=False)
+    embed.add_field(name="Twitter", value="<:X:1266623061550174329> [Twitter](https://x.com/CAOZYUTU)", inline=False)
+    embed.add_field(name="Instagram", value="<:INSTAGRAM:1266623062929969247> [Instagram](https://www.instagram.com/caozyt/)", inline=False)
+    embed.add_field(name="YouTube", value="<:YOUTUBE:1266623064347775027> [YouTube](https://www.youtube.com/@CAOZ)", inline=False)
+    embed.add_field(name="Kick", value="<:kick:1266624736226578532> [Kick](https://kick.com/caoz)", inline=False)
     embed.set_footer(text="¡No olvides darle follow!")
 
     # Set the image URL with the desired image
