@@ -9,7 +9,8 @@ load_dotenv()
 # Obtener el token y el canal ID del archivo .env
 TOKEN = os.getenv('BOT_PRINCIPAL')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID_BOT_PRINCIPAL'))
-MESSAGE_ID = None  # Will be assigned dynamically
+MESSAGE_ID_PLATAFORMA = None  # Will be assigned dynamically
+MESSAGE_ID_REGION = None  # Will be assigned dynamically
 
 # Bot configuration
 intents = discord.Intents.default()
@@ -57,7 +58,6 @@ async def redes(ctx):
 
     await ctx.send(embed=embed)
 
-
 # Command !plataforma
 @bot.command(name='plataforma')
 async def plataforma(ctx):
@@ -75,9 +75,9 @@ async def plataforma(ctx):
         await message.add_reaction(emoji)
 
     # Save the message ID to a global variable for use in on_raw_reaction_add and on_raw_reaction_remove
-    global MESSAGE_ID
-    MESSAGE_ID = message.id
-    print(f'Sent !plataforma message with ID: {MESSAGE_ID}')
+    global MESSAGE_ID_PLATAFORMA
+    MESSAGE_ID_PLATAFORMA = message.id
+    print(f'Sent !plataforma message with ID: {MESSAGE_ID_PLATAFORMA}')
 
 # Command !region
 @bot.command(name='region')
@@ -100,9 +100,9 @@ async def region(ctx):
         await message.add_reaction(emoji)
 
     # Save the message ID to a global variable for use in on_raw_reaction_add and on_raw_reaction_remove
-    global MESSAGE_ID
-    MESSAGE_ID = message.id
-    print(f'Sent !region message with ID: {MESSAGE_ID}')
+    global MESSAGE_ID_REGION
+    MESSAGE_ID_REGION = message.id
+    print(f'Sent !region message with ID: {MESSAGE_ID_REGION}')
 
 @bot.event
 async def on_ready():
@@ -115,10 +115,27 @@ async def on_ready():
 @bot.event
 async def on_raw_reaction_add(payload):
     print(f'Reaction added: {payload.emoji} by {payload.user_id}')
-    if payload.message_id == MESSAGE_ID:
+    
+    if payload.message_id == MESSAGE_ID_PLATAFORMA:
         guild = bot.get_guild(payload.guild_id)
         print(f'Guild: {guild.name} (ID: {guild.id})')
-        role_id = roles.get(str(payload.emoji)) or region_roles.get(str(payload.emoji))
+        role_id = roles.get(str(payload.emoji))
+        print(f'Role ID for emoji {payload.emoji}: {role_id}')
+        if role_id:
+            role = guild.get_role(int(role_id))
+            member = guild.get_member(payload.user_id)
+            if role and member:
+                await member.add_roles(role)
+                print(f'Assigned {role.name} to {member.name}')
+            else:
+                print(f'Error: Role or member not found. Role ID: {role_id}, Member ID: {payload.user_id}')
+        else:
+            print(f'Error: No role found for emoji {payload.emoji}')
+
+    elif payload.message_id == MESSAGE_ID_REGION:
+        guild = bot.get_guild(payload.guild_id)
+        print(f'Guild: {guild.name} (ID: {guild.id})')
+        role_id = region_roles.get(str(payload.emoji))
         print(f'Role ID for emoji {payload.emoji}: {role_id}')
         if role_id:
             role = guild.get_role(int(role_id))
@@ -134,10 +151,27 @@ async def on_raw_reaction_add(payload):
 @bot.event
 async def on_raw_reaction_remove(payload):
     print(f'Reaction removed: {payload.emoji} by {payload.user_id}')
-    if payload.message_id == MESSAGE_ID:
+    
+    if payload.message_id == MESSAGE_ID_PLATAFORMA:
         guild = bot.get_guild(payload.guild_id)
         print(f'Guild: {guild.name} (ID: {guild.id})')
-        role_id = roles.get(str(payload.emoji)) or region_roles.get(str(payload.emoji))
+        role_id = roles.get(str(payload.emoji))
+        print(f'Role ID for emoji {payload.emoji}: {role_id}')
+        if role_id:
+            role = guild.get_role(int(role_id))
+            member = guild.get_member(payload.user_id)
+            if role and member:
+                await member.remove_roles(role)
+                print(f'Removed {role.name} from {member.name}')
+            else:
+                print(f'Error: Role or member not found. Role ID: {role_id}, Member ID: {payload.user_id}')
+        else:
+            print(f'Error: No role found for emoji {payload.emoji}')
+
+    elif payload.message_id == MESSAGE_ID_REGION:
+        guild = bot.get_guild(payload.guild_id)
+        print(f'Guild: {guild.name} (ID: {guild.id})')
+        role_id = region_roles.get(str(payload.emoji))
         print(f'Role ID for emoji {payload.emoji}: {role_id}')
         if role_id:
             role = guild.get_role(int(role_id))
