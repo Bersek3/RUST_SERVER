@@ -37,6 +37,7 @@ region_roles = {
 }
 
 # Command !redes
+
 @bot.command(name='redes')
 async def redes(ctx):
     embed = discord.Embed(
@@ -55,6 +56,22 @@ async def redes(ctx):
     embed.set_image(url="https://i.imgur.com/XMIEbfF.jpeg")
 
     await ctx.send(embed=embed)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Command !plataforma
 @bot.command(name='plataforma')
