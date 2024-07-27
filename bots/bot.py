@@ -52,7 +52,7 @@ async def redes(ctx):
     embed.set_footer(text="¡No olvides darle follow!")
 
     # Replace the image URL with the desired image
-    embed.set_image(url="URL_DE_TU_IMAGEN")
+    embed.set_image(url="https://i.imgur.com/XMIEbfF.jpeg")
 
     await ctx.send(embed=embed)
 
