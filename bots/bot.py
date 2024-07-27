@@ -44,12 +44,12 @@ async def redes(ctx):
         title="REDES SOCIALES DE CAOZ",
         color=0x6A0DAD  # Purple color
     )
-    embed.add_field(name="<:TWITCH:1266624176769470584>", value="[Twitch](https://www.twitch.tv/caozssj)", inline=False)
-    embed.add_field(name="<:FACEBOOK:1266624176769470584>", value="[Facebook](https://www.facebook.com)", inline=False)
-    embed.add_field(name="<:X:1266624176769470584>", value="[Twitter](https://x.com/CAOZYUTU)", inline=False)
-    embed.add_field(name="<:INSTAGRAM:1266624176769470584>", value="[Instagram](https://www.instagram.com/caozyt/)", inline=False)
-    embed.add_field(name="<:YOUTUBE:1266624176769470584>", value="[YouTube](https://www.youtube.com/@CAOZ)", inline=False)
-    embed.add_field(name="<:KICK:1266624838991351930>", value="[Kick](https://kick.com/caoz)", inline=False)
+    embed.add_field(name="<:TWITCH:1266623059662733363>", value="[Twitch](https://www.twitch.tv/caozssj)", inline=False)
+    embed.add_field(name="<:FACEBOOK:1266623057645015082>", value="[Facebook](https://www.facebook.com)", inline=False)
+    embed.add_field(name="<:X:1266623061550174329>", value="[Twitter](https://x.com/CAOZYUTU)", inline=False)
+    embed.add_field(name="<:INSTAGRAM:1266623062929969247>", value="[Instagram](https://www.instagram.com/caozyt/)", inline=False)
+    embed.add_field(name="<:YOUTUBE:1266623064347775027>", value="[YouTube](https://www.youtube.com/@CAOZ)", inline=False)
+    embed.add_field(name="<:KICK:1082916486240292975>", value="[Kick](https://kick.com/caoz)", inline=False)
     embed.set_footer(text="¡No olvides darle follow!")
 
     # Replace the image URL with the desired image
