@@ -93,12 +93,14 @@ async def manejar_spam(user):
         await user.ban(reason='Baneado después de 3 suspensiones por spam.')
         await user.send('Has sido baneado del servidor después de recibir 3 suspensiones por spam.')
         suspensiones.pop(user_id)  # Limpiar el conteo
+
+        # Informar en el canal de registro
+        canal_registro = bot.get_channel(canal_registro_id)
+        if canal_registro:
+            await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por hacer spam repetido.')
     else:
         timeout_duration = timedelta(hours=1)
         await aplicar_timeout(user, timeout_duration)
-
-
-        
 
 # Función para manejar acciones contra usuarios que hacen invitaciones a otros servidores de Discord
 async def manejar_invitacion_discord(user):
@@ -119,11 +121,14 @@ async def manejar_invitacion_discord(user):
         await user.ban(reason='Baneado después de 3 suspensiones por invitaciones.')
         await user.send('Has sido baneado del servidor después de recibir 3 suspensiones por invitaciones a otros servidores.')
         suspensiones.pop(user_id)  # Limpiar el conteo
+
+        # Informar en el canal de registro
+        canal_registro = bot.get_channel(canal_registro_id)
+        if canal_registro:
+            await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por enviar invitaciones repetidas.')
     else:
         timeout_duration = timedelta(minutes=30)
         await aplicar_timeout(user, timeout_duration)
-
-
 
 async def aplicar_timeout(user, timeout_duration):
     canal_registro = bot.get_channel(canal_registro_id)
@@ -144,7 +149,7 @@ async def aplicar_timeout(user, timeout_duration):
         await limpiar_mensajes(user)
         
         if canal_registro:
-            await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por hacer spam repetido.')   
+            await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por hacer spam repetido.')
 
 # Ejecutar el bot
 bot.run(TOKEN)
