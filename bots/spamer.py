@@ -49,9 +49,11 @@ async def on_message(message):
 
     if await es_spam(message):
         await manejar_spam(message.author)
+        await message.delete()  # Eliminar mensaje de spam
     
     if await es_invitacion_discord(message):
         await manejar_invitacion_discord(message.author)
+        await message.delete()  # Eliminar mensaje de invitación
 
     await bot.process_commands(message)
 
