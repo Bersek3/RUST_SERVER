@@ -10,7 +10,7 @@ load_dotenv()
 TOKEN = os.getenv('ANUNCIOS_BOT')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID_BOT_ANUNCIOS'))
-YOUTUBE_CHANNEL_ID = 'YOUR_YOUTUBE_CHANNEL_ID'  # Reemplaza esto con el ID de tu canal de YouTube
+YOUTUBE_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID')  # Reemplaza esto con el ID de tu canal de YouTube
 LAST_CHECKED_FILE = 'last_checked.txt'
 
 intents = discord.Intents.default()
@@ -40,7 +40,11 @@ async def check_for_new_videos_and_streams_and_shorts():
         publishedAfter=last_checked,
         maxResults=5
     )
-    video_response = video_request.execute()
+    try:
+        video_response = video_request.execute()
+    except googleapiclient.errors.HttpError as e:
+        print(f'Error en la consulta de videos: {e}')
+        return
     
     # Consulta para eventos en directo
     stream_request = youtube.search().list(
@@ -51,7 +55,11 @@ async def check_for_new_videos_and_streams_and_shorts():
         publishedAfter=last_checked,
         maxResults=5
     )
-    stream_response = stream_request.execute()
+    try:
+        stream_response = stream_request.execute()
+    except googleapiclient.errors.HttpError as e:
+        print(f'Error en la consulta de directos: {e}')
+        return
 
     # Consulta para shorts nuevos
     short_request = youtube.search().list(
@@ -61,11 +69,15 @@ async def check_for_new_videos_and_streams_and_shorts():
         publishedAfter=last_checked,
         maxResults=5
     )
-    short_response = short_request.execute()
+    try:
+        short_response = short_request.execute()
+    except googleapiclient.errors.HttpError as e:
+        print(f'Error en la consulta de shorts: {e}')
+        return
     
-    new_videos = video_response['items']
-    live_streams = stream_response['items']
-    new_shorts = [item for item in short_response['items'] if 'shorts' in item['snippet']['title'].lower()]
+    new_videos = video_response.get('items', [])
+    live_streams = stream_response.get('items', [])
+    new_shorts = [item for item in short_response.get('items', []) if 'shorts' in item['snippet']['title'].lower()]
 
     if new_videos:
         last_checked_time = new_videos[0]['snippet']['publishedAt']
