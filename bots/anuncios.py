@@ -1,129 +1,103 @@
 import discord
-from discord.ext import commands, tasks
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from datetime import datetime, timedelta
-import pytz
-from dotenv import load_dotenv
+import googleapiclient.discovery
+import asyncio
+import datetime
 import os
+from dotenv import load_dotenv
 
 # Cargar variables de entorno
 load_dotenv()
 TOKEN = os.getenv('ANUNCIOS_BOT')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID_BOT_ANUNCIOS'))
+YOUTUBE_CHANNEL_ID = 'YOUR_YOUTUBE_CHANNEL_ID'  # Reemplaza esto con el ID de tu canal de YouTube
+LAST_CHECKED_FILE = 'last_checked.txt'
 
 intents = discord.Intents.default()
 intents.message_content = True
-intents.typing = False
-intents.presences = False
+client = discord.Client(intents=intents)
 
-bot = commands.Bot(command_prefix='!', intents=intents)
-notified_streams = set()
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('Successfully connected to Discord!')
-    check_scheduled_streams.start()
-
-@tasks.loop(minutes=1)
-async def check_scheduled_streams():
+def get_last_checked_time():
     try:
-        print("Checking for scheduled streams...")
-        upcoming_streams, live_streams = get_scheduled_streams()
-        print(f"Upcoming streams: {upcoming_streams}")
-        print(f"Live streams: {live_streams}")
-        
-        for stream_id, stream_title, stream_start_time, stream_url in upcoming_streams:
-            if stream_id not in notified_streams:
-                await announce_upcoming_stream(stream_title, stream_start_time, stream_url)
-                notified_streams.add(stream_id)
-        
-        for stream_id, stream_title, stream_url in live_streams:
-            if stream_id not in notified_streams:
-                await announce_live_stream(stream_title, stream_url)
-                notified_streams.add(stream_id)
-    
-    except Exception as e:
-        print(f'Error checking scheduled streams: {type(e).__name__}: {e}')
+        with open(LAST_CHECKED_FILE, 'r') as file:
+            return file.read().strip()
+    except FileNotFoundError:
+        return '1970-01-01T00:00:00Z'
 
-def get_scheduled_streams():
-    youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+def set_last_checked_time(time):
+    with open(LAST_CHECKED_FILE, 'w') as file:
+        file.write(time)
+
+async def check_for_new_videos_and_streams_and_shorts():
+    youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+    last_checked = get_last_checked_time()
     
-    # Obtener próximos directos
-    request_upcoming = youtube.search().list(
+    # Consulta para videos nuevos
+    video_request = youtube.search().list(
         part='snippet',
-        channelId='UCUskWGVf9SCdcp0HGpTKUxw',
-        eventType='upcoming',
-        type='video',
+        channelId=YOUTUBE_CHANNEL_ID,
+        order='date',
+        publishedAfter=last_checked,
         maxResults=5
     )
-    response_upcoming = request_upcoming.execute()
-    upcoming_streams = parse_search_response(response_upcoming)
+    video_response = video_request.execute()
     
-    # Obtener directos en vivo
-    request_live = youtube.search().list(
+    # Consulta para eventos en directo
+    stream_request = youtube.search().list(
         part='snippet',
-        channelId='UCUskWGVf9SCdcp0HGpTKUxw',
+        channelId=YOUTUBE_CHANNEL_ID,
         eventType='live',
         type='video',
+        publishedAfter=last_checked,
         maxResults=5
     )
-    response_live = request_live.execute()
-    live_streams = parse_search_response(response_live)
-    
-    return upcoming_streams, live_streams
+    stream_response = stream_request.execute()
 
-def parse_search_response(response):
-    streams = []
-    for item in response.get('items', []):
-        stream_id = item['id']['videoId']
-        stream_title = item['snippet']['title']
-        stream_start_time = datetime.fromisoformat(item['snippet']['publishTime'].replace('Z', '+00:00')).replace(tzinfo=None)
-        stream_url = f"https://www.youtube.com/watch?v={stream_id}"
-        streams.append((stream_id, stream_title, stream_start_time, stream_url))
-    return streams
-
-async def announce_upcoming_stream(stream_title, stream_start_time, stream_url):
-    channel = bot.get_channel(DISCORD_CHANNEL_ID)
-    if not channel:
-        print(f'Error: Discord channel with ID {DISCORD_CHANNEL_ID} not found.')
-        return
-    
-    chile_tz = pytz.timezone('America/Santiago')
-    chile_time = stream_start_time.astimezone(chile_tz)
-    
-    embed = discord.Embed(
-        title=f"Nuevo directo programado en YouTube: {stream_title}",
-        description=f"El directo comenzará a las {chile_time.strftime('%H:%M')} hora de Chile (UTC-3)",
-        color=discord.Color.red()
+    # Consulta para shorts nuevos
+    short_request = youtube.search().list(
+        part='snippet',
+        channelId=YOUTUBE_CHANNEL_ID,
+        order='date',
+        publishedAfter=last_checked,
+        maxResults=5
     )
-    embed.add_field(name="Ver en YouTube", value=stream_url)
+    short_response = short_request.execute()
     
-    try:
-        await channel.send(embed=embed)
-        print(f'Stream announcement sent for: {stream_title}')
-    except discord.HTTPException as e:
-        print(f'Error sending announcement for {stream_title}: {e}')
+    new_videos = video_response['items']
+    live_streams = stream_response['items']
+    new_shorts = [item for item in short_response['items'] if 'shorts' in item['snippet']['title'].lower()]
 
-async def announce_live_stream(stream_title, stream_url):
-    channel = bot.get_channel(DISCORD_CHANNEL_ID)
-    if not channel:
-        print(f'Error: Discord channel with ID {DISCORD_CHANNEL_ID} not found.')
-        return
+    if new_videos:
+        last_checked_time = new_videos[0]['snippet']['publishedAt']
+        set_last_checked_time(last_checked_time)
+        
+        channel = client.get_channel(DISCORD_CHANNEL_ID)
+        for video in new_videos:
+            video_title = video['snippet']['title']
+            video_url = f"https://www.youtube.com/watch?v={video['id']['videoId']}"
+            await channel.send(f"Nuevo video: {video_title}\n{video_url}")
     
-    embed = discord.Embed(
-        title=f"¡El directo ha comenzado en YouTube!: {stream_title}",
-        description=f"No te lo pierdas en YouTube: {stream_url}",
-        color=discord.Color.green()
-    )
+    if live_streams:
+        channel = client.get_channel(DISCORD_CHANNEL_ID)
+        for stream in live_streams:
+            stream_title = stream['snippet']['title']
+            stream_url = f"https://www.youtube.com/watch?v={stream['id']['videoId']}"
+            stream_start_time = stream['snippet']['publishedAt']
+            stream_start_time_formatted = datetime.datetime.strptime(stream_start_time, '%Y-%m-%dT%H:%M:%SZ').strftime('%d de %B de %Y a las %H:%M')
+            await channel.send(f"📅 **Nuevo directo programado**\n\nTítulo: {stream_title}\n📅 Fecha y Hora de Inicio: {stream_start_time_formatted}\n🔗 [Enlace al Directo]({stream_url})\n\n¡No te lo pierdas!")
     
-    try:
-        await channel.send(embed=embed)
-        print(f'Live stream announcement sent for: {stream_title}')
-    except discord.HTTPException as e:
-        print(f'Error sending live announcement for {stream_title}: {e}')
+    if new_shorts:
+        channel = client.get_channel(DISCORD_CHANNEL_ID)
+        for short in new_shorts:
+            short_title = short['snippet']['title']
+            short_url = f"https://www.youtube.com/watch?v={short['id']['videoId']}"
+            await channel.send(f"Nuevo short: {short_title}\n{short_url}")
 
-# Start the bot
-bot.run(TOKEN)
+@client.event
+async def on_ready():
+    print(f'Bot conectado como {client.user}')
+    while True:
+        await check_for_new_videos_and_streams_and_shorts()
+        await asyncio.sleep(300)  # Espera 5 minutos
+
+client.run(TOKEN)
