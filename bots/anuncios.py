@@ -117,8 +117,10 @@ async def check_for_new_videos_and_streams_and_shorts():
 @client.event
 async def on_ready():
     print(f'Bot conectado como {client.user}')
+    await asyncio.sleep(120)  # Esperar 2 minutos (120 segundos)
+    await check_for_new_videos_and_streams_and_shorts()  # Realizar la primera comprobación
     while True:
+        await asyncio.sleep(300)  # Espera 5 minutos entre comprobaciones
         await check_for_new_videos_and_streams_and_shorts()
-        await asyncio.sleep(300)  # Espera 5 minutos
 
 client.run(TOKEN)

@@ -12,6 +12,8 @@ cursor.execute('''
     CREATE TABLE IF NOT EXISTS last_checked (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp TEXT NOT NULL
+);
+
     )
 ''')
 
@@ -19,6 +21,7 @@ cursor.execute('''
 cursor.execute('''
     INSERT INTO last_checked (timestamp) VALUES ('1970-01-01T00:00:00Z')
 ''')
+
 
 # Guardar los cambios y cerrar la conexión
 conn.commit()
