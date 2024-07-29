@@ -41,6 +41,29 @@ async def limpiar_mensajes(user):
             if message.author == user:
                 await message.delete()
 
+
+
+@bot.event
+async def on_ready():
+    print(f'{bot.user.name} está listo.')
+
+def es_clip_kick(message_content):
+    return bool(re.search(r'https:\/\/kick\.com\/\w+\?clip=\w+', message_content, flags=re.IGNORECASE))
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    if message.channel.id == CANAL_CLIPS_KICK_ID:
+        if not es_clip_kick(message.content):
+            await message.delete()  # Eliminar mensaje que no es un enlace de clip de Kick
+            return
+
+    await bot.process_commands(message)
+
+                
+
 # Evento para manejar mensajes y detectar spam e invitaciones
 @bot.event
 async def on_message(message):
@@ -152,6 +175,10 @@ async def aplicar_timeout(user, timeout_duration):
         
         if canal_registro:
             await canal_registro.send(f'Usuario {user.name}#{user.discriminator} ({user.id}) ha sido baneado por hacer spam repetido.')
+
+
+
+
 
 # Ejecutar el bot
 bot.run(TOKEN)
