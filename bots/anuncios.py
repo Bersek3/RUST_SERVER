@@ -3,6 +3,7 @@ import googleapiclient.discovery
 import asyncio
 import datetime
 import os
+import sqlite3
 from dotenv import load_dotenv
 
 # Cargar variables de entorno
@@ -10,23 +11,27 @@ load_dotenv()
 TOKEN = os.getenv('ANUNCIOS_BOT')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID_BOT_ANUNCIOS'))
-YOUTUBE_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID')  # Reemplaza esto con el ID de tu canal de YouTube
-LAST_CHECKED_FILE = 'last_checked.txt'
+YOUTUBE_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID') 
+DB_PATH = 'bots/db/data.db'
 
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
 def get_last_checked_time():
-    try:
-        with open(LAST_CHECKED_FILE, 'r') as file:
-            return file.read().strip()
-    except FileNotFoundError:
-        return '1970-01-01T00:00:00Z'
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('SELECT timestamp FROM last_checked ORDER BY id DESC LIMIT 1')
+    result = cursor.fetchone()
+    conn.close()
+    return result[0] if result else '1970-01-01T00:00:00Z'
 
-def set_last_checked_time(time):
-    with open(LAST_CHECKED_FILE, 'w') as file:
-        file.write(time)
+def set_last_checked_time(timestamp):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO last_checked (timestamp) VALUES (?)', (timestamp,))
+    conn.commit()
+    conn.close()
 
 async def check_for_new_videos_and_streams_and_shorts():
     youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
@@ -45,7 +50,7 @@ async def check_for_new_videos_and_streams_and_shorts():
     except googleapiclient.errors.HttpError as e:
         print(f'Error en la consulta de videos: {e}')
         return
-    
+
     # Consulta para eventos en directo
     stream_request = youtube.search().list(
         part='snippet',
@@ -106,6 +111,10 @@ async def check_for_new_videos_and_streams_and_shorts():
             await channel.send(f"Nuevo short: {short_title}\n{short_url}")
         except KeyError:
             print(f"Error: No se encontró 'videoId' en el resultado del short: {short}")
+
+    # Actualizar el tiempo de la última comprobación
+    new_last_checked = datetime.datetime.utcnow().isoformat() + 'Z'
+    set_last_checked_time(new_last_checked)
 
 @client.event
 async def on_ready():
