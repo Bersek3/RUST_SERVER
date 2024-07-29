@@ -11,8 +11,8 @@ load_dotenv()
 TOKEN = os.getenv('ANUNCIOS_BOT')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID_BOT_ANUNCIOS'))
-YOUTUBE_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID') 
-DB_PATH = 'bots/db/data.db'
+YOUTUBE_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID')  # Reemplaza esto con el ID de tu canal de YouTube
+DB_PATH = 'bots/db/data.db'  # Ruta actualizada a la base de datos
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -98,9 +98,7 @@ async def check_for_new_videos_and_streams_and_shorts():
         try:
             stream_title = stream['snippet']['title']
             stream_url = f"https://www.youtube.com/watch?v={stream['id']['videoId']}"
-            stream_start_time = stream['snippet']['publishedAt']
-            stream_start_time_formatted = datetime.datetime.strptime(stream_start_time, '%Y-%m-%dT%H:%M:%SZ').strftime('%d de %B de %Y a las %H:%M')
-            await channel.send(f"📅 **Nuevo directo programado**\n\nTítulo: {stream_title}\n📅 Fecha y Hora de Inicio: {stream_start_time_formatted}\n🔗 [Enlace al Directo]({stream_url})\n\n¡No te lo pierdas!")
+            await channel.send(f"Nuevo directo: {stream_title}\n{stream_url}")
         except KeyError:
             print(f"Error: No se encontró 'videoId' en el resultado del directo: {stream}")
     
