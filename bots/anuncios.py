@@ -79,31 +79,33 @@ async def check_for_new_videos_and_streams_and_shorts():
     live_streams = stream_response.get('items', [])
     new_shorts = [item for item in short_response.get('items', []) if 'shorts' in item['snippet']['title'].lower()]
 
-    if new_videos:
-        last_checked_time = new_videos[0]['snippet']['publishedAt']
-        set_last_checked_time(last_checked_time)
-        
-        channel = client.get_channel(DISCORD_CHANNEL_ID)
-        for video in new_videos:
+    channel = client.get_channel(DISCORD_CHANNEL_ID)
+    
+    for video in new_videos:
+        try:
             video_title = video['snippet']['title']
             video_url = f"https://www.youtube.com/watch?v={video['id']['videoId']}"
             await channel.send(f"Nuevo video: {video_title}\n{video_url}")
+        except KeyError:
+            print(f"Error: No se encontró 'videoId' en el resultado del video: {video}")
     
-    if live_streams:
-        channel = client.get_channel(DISCORD_CHANNEL_ID)
-        for stream in live_streams:
+    for stream in live_streams:
+        try:
             stream_title = stream['snippet']['title']
             stream_url = f"https://www.youtube.com/watch?v={stream['id']['videoId']}"
             stream_start_time = stream['snippet']['publishedAt']
             stream_start_time_formatted = datetime.datetime.strptime(stream_start_time, '%Y-%m-%dT%H:%M:%SZ').strftime('%d de %B de %Y a las %H:%M')
             await channel.send(f"📅 **Nuevo directo programado**\n\nTítulo: {stream_title}\n📅 Fecha y Hora de Inicio: {stream_start_time_formatted}\n🔗 [Enlace al Directo]({stream_url})\n\n¡No te lo pierdas!")
+        except KeyError:
+            print(f"Error: No se encontró 'videoId' en el resultado del directo: {stream}")
     
-    if new_shorts:
-        channel = client.get_channel(DISCORD_CHANNEL_ID)
-        for short in new_shorts:
+    for short in new_shorts:
+        try:
             short_title = short['snippet']['title']
             short_url = f"https://www.youtube.com/watch?v={short['id']['videoId']}"
             await channel.send(f"Nuevo short: {short_title}\n{short_url}")
+        except KeyError:
+            print(f"Error: No se encontró 'videoId' en el resultado del short: {short}")
 
 @client.event
 async def on_ready():
