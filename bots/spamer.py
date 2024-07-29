@@ -10,6 +10,7 @@ import os
 load_dotenv()
 TOKEN = os.getenv('SPAMER_BOT')
 canal_registro_id = int(os.getenv('CANAL_REGISTRO_ID_SPAMER_BOT'))
+canal_id_kick = int(os.getenv('CANAL_CLIPS_KICK_ID')) 
 roles_a_excluir = list(map(int, os.getenv('ROLES_A_EXCLUIR').split(',')))
 
 # Crear el cliente de Discord
@@ -55,7 +56,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if message.channel.id == CANAL_CLIPS_KICK_ID:
+    if message.channel.id == canal_id_kick:
         if not es_clip_kick(message.content):
             await message.delete()  # Eliminar mensaje que no es un enlace de clip de Kick
             return
