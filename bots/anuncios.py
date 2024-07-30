@@ -11,8 +11,8 @@ load_dotenv()
 TOKEN = os.getenv('ANUNCIOS_BOT')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID_BOT_ANUNCIOS'))
-YOUTUBE_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID')  # Reemplaza esto con el ID de tu canal de YouTube
-DB_PATH = 'bots/db/data.db'  # Ruta actualizada a la base de datos
+YOUTUBE_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID')
+DB_PATH = 'bots/db/data.db'
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -36,8 +36,7 @@ def set_last_checked_time(timestamp):
 async def check_for_new_videos_and_streams_and_shorts():
     youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
     last_checked = get_last_checked_time()
-    
-    # Consulta para videos nuevos
+
     video_request = youtube.search().list(
         part='snippet',
         channelId=YOUTUBE_CHANNEL_ID,
@@ -51,7 +50,6 @@ async def check_for_new_videos_and_streams_and_shorts():
         print(f'Error en la consulta de videos: {e}')
         return
 
-    # Consulta para eventos en directo
     stream_request = youtube.search().list(
         part='snippet',
         channelId=YOUTUBE_CHANNEL_ID,
@@ -66,7 +64,6 @@ async def check_for_new_videos_and_streams_and_shorts():
         print(f'Error en la consulta de directos: {e}')
         return
 
-    # Consulta para shorts nuevos
     short_request = youtube.search().list(
         part='snippet',
         channelId=YOUTUBE_CHANNEL_ID,
@@ -105,22 +102,21 @@ async def check_for_new_videos_and_streams_and_shorts():
     for short in new_shorts:
         try:
             short_title = short['snippet']['title']
-            short_url = f"https://www.youtube.com/watch?v={short['id']['videoId']}"
+            short_url = f"https://www.youtube.com/shorts/{short['id']['videoId']}"
             await channel.send(f"Nuevo short: {short_title}\n{short_url}")
         except KeyError:
             print(f"Error: No se encontró 'videoId' en el resultado del short: {short}")
 
-    # Actualizar el tiempo de la última comprobación
     new_last_checked = datetime.datetime.utcnow().isoformat() + 'Z'
     set_last_checked_time(new_last_checked)
 
 @client.event
 async def on_ready():
     print(f'Bot conectado como {client.user}')
-    await asyncio.sleep(120)  # Esperar 2 minutos (120 segundos)
-    await check_for_new_videos_and_streams_and_shorts()  # Realizar la primera comprobación
+    await asyncio.sleep(120)
+    await check_for_new_videos_and_streams_and_shorts()
     while True:
-        await asyncio.sleep(300)  # Espera 5 minutos entre comprobaciones
+        await asyncio.sleep(300)
         await check_for_new_videos_and_streams_and_shorts()
 
 client.run(TOKEN)
