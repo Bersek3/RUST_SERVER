@@ -1,4 +1,4 @@
-worker: python bot.py
-worker: python spamer.py
-worker: python anuncios.py
-worker: python carobot.py
+bot1: python bot.py
+bot2: python spamer.py
+bot3: python anuncios.py
+carobot: python carobot.py
