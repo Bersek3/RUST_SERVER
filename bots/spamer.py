@@ -51,18 +51,36 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+import re
+
 async def es_spam(message):
+    # Si el mensaje es muy largo
     if len(message.content) > 250:
         return True
 
+    # Lista de acortadores de enlaces comunes (regex mejorada)
     shorteners = [
-        r'bit\.ly', r'goo\.gl', r't\.co', r'tinyurl\.com', r'cutt\.ly', 
-        r'is\.gd', r'cli\.ck', r'shorte\.st', r'ultraurl\.com', r'ow\.ly'
+        r'(https?:\/\/)?(www\.)?(bit\.ly|goo\.gl|t\.co|tinyurl\.com|cutt\.ly|is\.gd|cli\.ck|shorte\.st|ultraurl\.com|ow\.ly)'
     ]
     if any(re.search(shortener, message.content) for shortener in shorteners):
         return True
 
+    # Palabras o frases típicas de spam
+    spam_keywords = ['gana dinero', 'oferta', 'descuento', 'gratis', 'click aquí', 'regístrate ahora']
+    if any(keyword in message.content.lower() for keyword in spam_keywords):
+        return True
+
+    # Contar cuántos enlaces hay en el mensaje
+    links = re.findall(r'(https?://[^\s]+)', message.content)
+    if len(links) > 2:  # Si hay más de 2 enlaces en el mensaje
+        return True
+
+    # No permitir enlaces que contengan la palabra "gift"
+    if any('gift' in link for link in links):
+        return True
+
     return False
+
 
 async def es_invitacion_discord(message):
     if re.search(r'discord\.gg\/\w+', message.content, flags=re.IGNORECASE):
