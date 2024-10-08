@@ -79,6 +79,10 @@ async def es_spam(message):
     if any('gift' in link for link in links):
         return True
 
+    # Bloquear enlaces específicos
+    if 'steamcommunity.com/gift-card' in message.content:
+        return True
+
     return False
 
 
