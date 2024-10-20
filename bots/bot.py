@@ -19,6 +19,21 @@ intents.reactions = True
 intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Diccionario de colores y roles
+color_roles = {
+    'ROJO': 'ID_DEL_ROL_ROJO',
+    'AZUL': 'ID_DEL_ROL_AZUL',
+    'AMARILLO': 'ID_DEL_ROL_AMARILLO',
+    'NARANJA': 'ID_DEL_ROL_NARANJA',
+    'VERDE': 'ID_DEL_ROL_VERDE',
+    'MORADO': 'ID_DEL_ROL_MORADO',
+    'ROSA': 'ID_DEL_ROL_ROSA',
+    'MARRON': 'ID_DEL_ROL_MARRON',
+    'GRIS': 'ID_DEL_ROL_GRIS',
+    'BLANCO': 'ID_DEL_ROL_BLANCO'
+}
+
+
 roles = {
     '<:PC:1263359013861458044>': '1263360911779827726',         # Emoji: <:PC:1263359013861458044>, Role: PC
     '<:PLAYSTATION:1263359018769059871>': '1263360763721027595',  # Emoji: <:PlayStation:1263359018769059871>, Role: PlayStation
@@ -36,6 +51,31 @@ region_roles = {
     '🍣': '1263377342613422110',  # Asia
     '🐨': '1263377372334395476'   # Oceanía
 }
+
+class ColorButtonView(View):
+    def __init__(self):
+        super().__init__(timeout=None)  # Evitar que los botones expiren
+
+        # Crear un botón para cada color en el diccionario
+        for color in color_roles.keys():
+            self.add_item(Button(label=color, style=discord.ButtonStyle.primary, custom_id=color))
+
+    @discord.ui.button(label="ROJO", style=discord.ButtonStyle.primary)
+    async def assign_role(self, interaction: discord.Interaction, button: Button):
+        # Obtener el rol a partir del botón presionado
+        role_id = color_roles[button.label]
+        role = interaction.guild.get_role(int(role_id))
+        member = interaction.user
+
+        # Quitar otros roles de color si ya tienen uno
+        for color in color_roles.values():
+            role_to_remove = interaction.guild.get_role(int(color))
+            if role_to_remove in member.roles:
+                await member.remove_roles(role_to_remove)
+
+        # Asignar el nuevo rol
+        await member.add_roles(role)
+        await interaction.response.send_message(f"Se te ha asignado el color {button.label}!", ephemeral=True
 
 # Command !redes
 
@@ -78,6 +118,28 @@ async def plataforma(ctx):
     # Save the message ID to a global variable for use in on_raw_reaction_add and on_raw_reaction_remove
     MESSAGE_ID_PLATAFORMA = message.id
     print(f'Sent !plataforma message with ID: {MESSAGE_ID_PLATAFORMA}')
+
+# Comando para mostrar los botones de colores
+@bot.command(name='colores')
+async def colores(ctx):
+    embed = discord.Embed(
+        title="COLORES NORMALES",
+        description="ELIGE UN COLOR PARA TU NOMBRE\n\n"
+                    "[ROJO] 🔥\n"
+                    "[AZUL] 🌊\n"
+                    "[AMARILLO] 🌻\n"
+                    "[NARANJA] 🦊\n"
+                    "[VERDE] 🍀\n"
+                    "[MORADO] 🍇\n"
+                    "[ROSA] 🌸\n"
+                    "[MARRON] 🍂\n"
+                    "[GRIS] ☁️\n"
+                    "[BLANCO] ❄️",
+        color=0x6A0DAD  # Purple color
+    )
+
+    # Enviar el mensaje con el embed y la vista de botones
+    await ctx.send(embed=embed, view=ColorButtonView())
 
 # Command !region
 @bot.command(name='region')
